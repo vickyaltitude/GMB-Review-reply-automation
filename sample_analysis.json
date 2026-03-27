@@ -1,0 +1,45 @@
+{
+  "id": "gen-1774614067-6Hy4MK9crnYPb37dxEcL",
+  "object": "chat.completion",
+  "created": 1774614067,
+  "model": "google/gemma-3-27b-it:free",
+  "provider": "Google AI Studio",
+  "system_fingerprint": null,
+  "choices": [
+    {
+      "index": 0,
+      "logprobs": null,
+      "finish_reason": "stop",
+      "native_finish_reason": "STOP",
+      "message": {
+        "role": "assistant",
+        "content": "```json\n{\n  \"sentiment\": \"critical | negative | neutral | positive | exceptional\",\n  \"route\": \"hold\",\n  \"confidence\": \"high\",\n  \"summary\": \"The review details a severe health incident (food poisoning requiring hospitalization) and expresses strong dissatisfaction, indicating a critical issue requiring immediate attention.\",\n  \"is_spam\": false,\n  \"draft_reply\": \"\"\n}\n```",
+        "refusal": null,
+        "reasoning": null
+      }
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 290,
+    "completion_tokens": 0,
+    "total_tokens": 290,
+    "cost": 0,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0,
+      "upstream_inference_prompt_cost": 0,
+      "upstream_inference_completions_cost": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  }
+}
