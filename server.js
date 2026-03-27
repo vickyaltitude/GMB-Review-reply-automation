@@ -1,18 +1,9 @@
-const OpenAI = require("openai");
 require("dotenv").config();
+const { GoogleGenAI } = require("@google/genai");
 
-const client = new OpenAI({
-  baseURL: "https://openrouter.ai/api/v1",
-  apiKey: process.env.OPENROUTER_API_KEY,
-});
+// Set up Vertex AI client
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-const FREE_MODELS = [
-  "meta-llama/llama-3.3-70b-instruct:free", // GPT-4 level, most reliable
-  "mistralai/mistral-small-3.1-24b-instruct:free", // fast, good JSON compliance
-  "google/gemma-3-27b-it:free", // Google, multimodal capable
-  "nvidia/nemotron-3-super-120b-a12b:free", // 262K context, very capable
-  "nousresearch/hermes-3-llama-3.1-405b:free", // best instruction following
-];
 // ✅ Strips markdown code fences before parsing
 function extractJSON(rawText) {
   const cleaned = rawText
@@ -24,26 +15,21 @@ function extractJSON(rawText) {
 }
 
 async function callWithFallback(messages) {
-  for (const model of FREE_MODELS) {
-    try {
-      console.log(`Trying model: ${model}`);
-      const completion = await client.chat.completions.create({
-        model,
-        messages,
-      });
-      return completion.choices[0].message.content;
-    } catch (err) {
-      if (err.status === 429 || err.status === 404) {
-        // ✅ catches both
-        console.log(`${model} unavailable (${err.status}), trying next...`);
-        continue;
-      }
-      throw err;
-    }
+  // messages: [{role: 'user', content: '...'}]
+  const userMessage = messages.find((m) => m.role === "user");
+  if (!userMessage) throw new Error("No user message provided");
+  try {
+    const response = await ai.models.generateContent({
+      model: process.env.GEMINI_MODEL || "gemini-2.0-flash",
+      contents: userMessage.content,
+      config: { responseMimeType: "application/json" },
+    });
+    // Vertex returns result.candidates[0].content.parts[0].text
+    return response.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  } catch (err) {
+    console.error("Vertex AI call failed", err);
+    throw new Error("Vertex AI LLM call failed: " + (err.message || err));
   }
-  throw new Error(
-    "All free models are currently unavailable. Try again in a minute.",
-  );
 }
 async function analyseReview(reviewText, starRating, businessName) {
   const prompt = `You are analysing a customer review for "${businessName}".
@@ -89,6 +75,10 @@ function createApp() {
   });
 
   app.post("/api/analyze-review", async (req, res) => {
+    const authKey = req.headers["authorization"];
+    if (authKey !== `Bearer ${process.env.API_AUTH_KEY}`) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
     const { reviewText, starRating, businessName } = req.body;
     if (!reviewText || starRating === undefined || !businessName) {
       return res.status(400).json({
@@ -112,6 +102,10 @@ function createApp() {
   });
 
   app.post("/api/generate-reply", async (req, res) => {
+    const authKey = req.headers["authorization"];
+    if (authKey !== `Bearer ${process.env.API_AUTH_KEY}`) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
     const { reviewText, starRating, businessName } = req.body;
     if (!reviewText || starRating === undefined || !businessName) {
       return res.status(400).json({
