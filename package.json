@@ -1,13 +1,17 @@
 {
   "name": "gmb-automation-node",
   "version": "1.0.0",
-  "description": "",
+  "description": "GMB Review Reply Automation with Playwright",
   "license": "ISC",
   "author": "",
   "type": "commonjs",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "automate": "node playwright/gmbAutomation.js",
+    "automate:visible": "PLAYWRIGHT_HEADLESS=false node playwright/gmbAutomation.js",
+    "automate:dryrun": "DRY_RUN=true node playwright/gmbAutomation.js",
+    "install:browsers": "npx playwright install chromium"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",
@@ -15,6 +19,7 @@
     "@openrouter/sdk": "^0.9.11",
     "dotenv": "^17.3.1",
     "express": "^4.18.4",
-    "openai": "^6.33.0"
+    "openai": "^6.33.0",
+    "playwright": "^1.44.0"
   }
 }
